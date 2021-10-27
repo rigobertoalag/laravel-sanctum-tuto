@@ -55,7 +55,8 @@ class CheckInController extends Controller
 
     public function upload($image){
         $path_info = pathinfo($image->getClientOriginalName());
-        $post_path = 'images/checkin';
+        // $post_path = 'images/checkin';
+        $post_path =  'public/storage';
 
         $rename = uniqid() . '.' . $path_info['extension'];
         $image->move(public_path() . "/$post_path",$rename);
