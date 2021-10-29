@@ -30,4 +30,5 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::get('userdatatest', 'App\Http\Controllers\TestController@userdatatest');
 
     Route::apiResource('checkin', App\Http\Controllers\CheckInController::class);
+    Route::apiResource('checkout', App\Http\Controllers\CheckOutController::class);
 });
