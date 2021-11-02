@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CheckOut;
+use App\Models\CheckIn;
 use Illuminate\Http\Request;
 
 use App\Http\Requests\CheckOutRequest;
