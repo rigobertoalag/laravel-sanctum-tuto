@@ -29,6 +29,7 @@ class ChecksController extends Controller
         if(!$lastCheckin && !$lastCheckOut){
             return response([
                 'message' => 'Turno del dia no iniciado',
+                'beginTurn' => false,
                 'ins' => $lastCheckin,
                 'outs' => $lastCheckOut,
             ], 200);
@@ -37,6 +38,7 @@ class ChecksController extends Controller
         if($lastCheckin && !$lastCheckOut){
             return response([
                 'message' => 'Turno iniciado pero no terminado',
+                'beginTurn' => true,
                 'ins' => $lastCheckin,
                 'outs' => $lastCheckOut,
             ], 200);
@@ -47,12 +49,9 @@ class ChecksController extends Controller
             $li = $lastCheckin->created_at;
             $lo = $lastCheckOut->created_at;
 
-            $lci = Carbon::parse($lastCheckin->created_at)->format("Y-m-d H:m:s");
-            $lco = Carbon::parse($lastCheckOut->created_at)->format("Y-m-d H:m:s");
-
             $newCheckin = DB::table('check_ins')->where([
                 ['user_id', '=', $current_user_id],
-                ['created_at', '>', $lci]
+                ['created_at', '>', $lo]
             ])->latest('id')->first();
     
             $newCheckOut = DB::table('check_outs')->where([
@@ -60,14 +59,20 @@ class ChecksController extends Controller
                 ['created_at', '>', $li]
             ])->latest('id')->first();
 
+            if($newCheckin && !$newCheckOut){
+                return response([
+                    'message' => 'Turno nuevo iniciado, pero no finalizado',
+                    'beginTurn' => true,
+                    'ins' => $newCheckin,
+                    'outs' => $newCheckOut,
+                ], 200);
+            }
+
             return response([
                 'message' => 'Turno completado',
-                'lastCheckin' => $li,
-                'lastCheckOut' => $lo,
-                'lci' => $lci,
-                'lco' => $lco,
-                'ins' => $newCheckin,
-                'outs' => $newCheckOut,
+                'beginTurn' => false,
+                'ins' => $lastCheckin,
+                'outs' => $lastCheckOut,
             ], 200);
         }
 
