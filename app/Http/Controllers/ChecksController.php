@@ -68,6 +68,21 @@ class ChecksController extends Controller
                 ], 200);
             }
 
+            $checkFull = DB::table('check_fulls')->where([
+                ['id_check_in', '=', $lastCheckin->id],
+                ['id_check_out', '=', $lastCheckOut->id]
+            ])->latest('id')->first();
+
+            if(!$checkFull){
+                DB::table('check_fulls')->insert([
+                    'user_id' => $current_user_id,
+                    'id_check_in' => $lastCheckin->id,
+                    'id_check_out' => $lastCheckOut->id,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ]);
+            }
+
             return response([
                 'message' => 'Turno completado',
                 'beginTurn' => false,
@@ -78,6 +93,6 @@ class ChecksController extends Controller
 
         return response([
             'error' => 'error'
-        ], 200);
+        ], 404);
     }
 }
