@@ -66,11 +66,4 @@ class UserController extends Controller
             'message' => 'salio'
         ], 200);
     }
-
-    public function test()
-    {
-        return response([
-            'message' => 'hola desde test'
-        ], 200);
-    }
 }
