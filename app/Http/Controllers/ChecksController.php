@@ -10,6 +10,20 @@ use Carbon\Carbon;
 
 class ChecksController extends Controller
 {
+    public function statusToken(){
+        $current_user = Auth::user();
+
+        if(!$current_user){
+            return response([
+                'error' => 'token invalido',
+            ],404);
+        }
+        return response([
+            'message' => 'token valido',
+            'currentUser' => $current_user
+        ],200);
+    }
+
     public function statuscheck()
     {
         $current_user_id = Auth::user()->id;
@@ -88,6 +102,7 @@ class ChecksController extends Controller
                 'beginTurn' => false,
                 'ins' => $lastCheckin,
                 'outs' => $lastCheckOut,
+                'full' => $checkFull
             ], 200);
         }
 
