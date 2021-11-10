@@ -10,18 +10,41 @@ use Carbon\Carbon;
 
 class ChecksController extends Controller
 {
-    public function statusToken(){
+    public function statusToken()
+    {
         $current_user = Auth::user();
 
-        if(!$current_user){
+        if (!$current_user) {
             return response([
                 'error' => 'token invalido',
-            ],404);
+            ], 404);
         }
         return response([
             'message' => 'token valido',
             'currentUser' => $current_user
-        ],200);
+        ], 200);
+    }
+
+    public function checkFull()
+    {
+        $current_user_id = Auth::user()->id;
+
+        $lastCheckFull = DB::table('check_fulls')
+            ->join('check_ins', 'check_ins.id', '=', 'check_fulls.id_check_in')
+            ->join('check_outs', 'check_outs.id', '=', 'check_fulls.id_check_out')
+            ->where('check_fulls.user_id', '=', $current_user_id)
+            ->select('check_fulls.id as checkFullID', 'check_ins.created_at as checkInDate', 'check_outs.created_at as checkOutDate')
+            ->latest('check_fulls.id')->first();
+
+        if (!$lastCheckFull) {
+            return response([
+                'message' => 'Primer inicio',
+            ], 404);
+        }
+        return response([
+            'message' => 'Ultimo turno completo',
+            'lastCheckFull' => $lastCheckFull
+        ], 200);
     }
 
     public function statuscheck()
@@ -40,7 +63,7 @@ class ChecksController extends Controller
             ['created_at', '>=', $day]
         ])->latest('id')->first();
 
-        if(!$lastCheckin && !$lastCheckOut){
+        if (!$lastCheckin && !$lastCheckOut) {
             return response([
                 'message' => 'Turno del dia no iniciado',
                 'beginTurn' => false,
@@ -49,7 +72,7 @@ class ChecksController extends Controller
             ], 200);
         }
 
-        if($lastCheckin && !$lastCheckOut){
+        if ($lastCheckin && !$lastCheckOut) {
             return response([
                 'message' => 'Turno iniciado pero no terminado',
                 'beginTurn' => true,
@@ -58,7 +81,7 @@ class ChecksController extends Controller
             ], 200);
         }
 
-        if($lastCheckin && $lastCheckOut){
+        if ($lastCheckin && $lastCheckOut) {
 
             $li = $lastCheckin->created_at;
             $lo = $lastCheckOut->created_at;
@@ -67,13 +90,13 @@ class ChecksController extends Controller
                 ['user_id', '=', $current_user_id],
                 ['created_at', '>', $lo]
             ])->latest('id')->first();
-    
+
             $newCheckOut = DB::table('check_outs')->where([
                 ['user_id', '=', $current_user_id],
                 ['created_at', '>', $li]
             ])->latest('id')->first();
 
-            if($newCheckin && !$newCheckOut){
+            if ($newCheckin && !$newCheckOut) {
                 return response([
                     'message' => 'Turno nuevo iniciado, pero no finalizado',
                     'beginTurn' => true,
@@ -87,7 +110,7 @@ class ChecksController extends Controller
                 ['id_check_out', '=', $lastCheckOut->id]
             ])->latest('id')->first();
 
-            if(!$checkFull){
+            if (!$checkFull) {
                 DB::table('check_fulls')->insert([
                     'user_id' => $current_user_id,
                     'id_check_in' => $lastCheckin->id,
